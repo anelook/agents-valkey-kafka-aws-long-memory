@@ -1,6 +1,6 @@
-import {redisClient, generateResponse, delay} from './common.js';
+import {valkeyClient, generateResponse, delay} from './common.js';
 import {producer} from "./producer.js";
-import Redis from "ioredis";
+import Valkey from "iovalkey";
 import {consumeMessagesFromStartToEnd} from "./consumer.js";
 import {LongMemoryService} from './longTermMemory.js';
 
@@ -90,8 +90,8 @@ class Agent {
     }
 
     async triggerReflection(recipient) {
-        await redisClient.publish(`${recipient}-internalize`, "Reflect on the conversation");
-        await redisClient.publish(`${this.agentName}-internalize`, "Reflect on the conversation");
+        await valkeyClient.publish(`${recipient}-internalize`, "Reflect on the conversation");
+        await valkeyClient.publish(`${this.agentName}-internalize`, "Reflect on the conversation");
     }
 
     async replyToMessage(message, recipient) {
@@ -110,7 +110,7 @@ class Agent {
             this.shortMemory.push(`${this.agentName} said: "${message}"`);
         }
 
-        await redisClient.publish(recipient, JSON.stringify({agent: this.agentName, message: response}));
+        await valkeyClient.publish(recipient, JSON.stringify({agent: this.agentName, message: response}));
     }
 
     async reflect() {
@@ -156,7 +156,7 @@ class Agent {
     }
 
     async start() {
-        const subscriber = new Redis(process.env.VALKEY);
+        const subscriber = new Valkey(process.env.VALKEY);
 
         // listen what another agent tells you
         this.subscribe(subscriber, this.agentName);

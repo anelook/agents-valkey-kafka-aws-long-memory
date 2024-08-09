@@ -1,9 +1,9 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import Redis from 'ioredis';
+import Valkey from 'iovalkey';
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const redisClient = new Redis(process.env.VALKEY);
+export const valkeyClient = new Valkey(process.env.VALKEY);
 
 export const client = new BedrockRuntimeClient({
     region: 'us-east-1',

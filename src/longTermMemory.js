@@ -9,6 +9,8 @@ dotenv.config();
 
 export class LongMemoryService {
     constructor(indexName) {
+        this.indexName = indexName;
+
         this.model = new BedrockChat({
             model: "anthropic.claude-3-haiku-20240307-v1:0",
             region: "us-east-1",
@@ -40,14 +42,23 @@ export class LongMemoryService {
         });
     }
 
+    async indexExists() {
+        try {
+            const response = await this.client.indices.exists({ index: this.indexName });
+            return response.body;
+        } catch (error) {
+            console.error('Error checking if index exists:', error);
+            return false;
+        }
+    }
+
     async getLongMemory(query) {
+        const indexExists = await this.indexExists();
+        if (!indexExists) {
+            return ''; // or return an appropriate empty response
+        }
+
         const response = await this.chain.call({ query });
         return response.text;
     }
 }
-
-// Usage:
-// const longMemoryService = new LongMemoryService("your-index-name");
-// longMemoryService.getLongMemory("your query").then(response => {
-//     console.log(response);
-// });

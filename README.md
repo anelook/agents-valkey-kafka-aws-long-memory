@@ -36,7 +36,7 @@ Terraform will initiate creation of four resources:
 - Aiven for OpenSearch
 - Aiven for caching (Valkey)
 
-Once deployment is done, Terraform will also create `.env` file with necessary credentials to access the services.
+Once deployment is done, Terraform will also create `.env` file with necessary credentials to access the services and `certificates` folder with Apache Kafka certificates.
 
 ## Step 2: Enable Amazon Bedrock model Claude
 In this project we use LLM Claude available through Amazon Bedrock.

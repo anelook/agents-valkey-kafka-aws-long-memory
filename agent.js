@@ -1,19 +1,27 @@
-import {valkeyClient, generateResponse, delay} from './common.js';
-import {producer} from "./producer.js";
+import { valkeyClient, generateResponse, delay } from './common.js';
+import { producer } from "./producer.js";
 import Valkey from "iovalkey";
-import {consumeMessagesFromStartToEnd} from "./consumer.js";
-import {LongMemoryService} from './longTermMemory.js';
+import { consumeMessagesFromStartToEnd } from "./consumer.js";
+import { LongMemoryService } from './longTermMemory.js';
+import {
+    getPromptStart,
+    instructions,
+    getMemoryPrompt,
+    getContinuationMemoryPrompt,
+    getFirstPrompt,
+    getContinuationPrompt,
+    getConversationSummaryPrompt
+} from './prompts.js';
 
 class Agent {
     constructor(agentName, anotherAgent, conversationTopic) {
-        console.log({conversationTopic})
+        console.log({ conversationTopic })
         this.agentName = agentName;
         this.anotherAgent = anotherAgent;
         this.shortMemory = [];
         this.conversationTopic = conversationTopic;
 
         this.longMemoryService = new LongMemoryService(`${this.agentName.toLowerCase()}-reflections`);
-
     }
 
     async queryLongTermMemory(message) {
@@ -24,48 +32,21 @@ class Agent {
     }
 
     async agentPrompt(message) {
-        const promptStart = `You're an inhabitant of a planet Hipola, a very small and cosy planet. Your name is ${this.agentName}.`;
-        const instructions = `Always follow these instructions:
-
-        - if it is the first time you meet this inhabitant, introduce yourself and learn their name;
-        - if you met this person before or already know something about them - do not introduce yourself, but relate to the previous conversation
-        - if it's ongoing conversation, don't introduce yourself, just continue the conversation, reply or ask question, be natural;
-        - after a couple of exchanged messages politely say goodbye
-        - answer the questions of the other inhabitant;
-        - when you're done talking respond with "[END]";
-        `
+        const promptStart = getPromptStart(this.agentName);
 
         // start of the conversation:
         if (!message) {
-            const memoriesOfOtherAgent = await this.queryLongTermMemory(`The context are memories of ${this.agentName}. Are there any memories or thoughts about ${this.anotherAgent}?. If yes, respond with "You remember meeting ${this.anotherAgent}, what you remember is that .... [continue based on the additional context]". If there are no info about  ${this.anotherAgent} in the context respond with "You haven't met  ${this.anotherAgent} before". don't provide any other judgement or additional information
-           `);
-
-
-            const firstPrompt =  `${promptStart} ${memoriesOfOtherAgent}.
-    
-            ${instructions}`
-            console.log("+++++++ " + this.agentName.toUpperCase() + " FIRST PROMPT: ", firstPrompt)
+            const memoriesOfOtherAgent = await this.queryLongTermMemory(getMemoryPrompt(this.agentName, this.anotherAgent));
+            const firstPrompt = getFirstPrompt(this.agentName, memoriesOfOtherAgent);
+            console.log("+++++++ " + this.agentName.toUpperCase() + " FIRST PROMPT: ", firstPrompt);
             console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
             return firstPrompt;
         }
 
         // continuation of the conversation:
-
         let memoryString = this.shortMemory.join('\n');
-        let longTermMemory = await this.queryLongTermMemory(`The context are memories of ${this.agentName}. Are there any memories or thoughts about ${this.anotherAgent} relevant to the message "${message}"? if yes return "Something that I remember from past conversations with ${this.anotherAgent} is that .... [continue with a concise list of notes]". 
-        
-        Otherwise, if there is no relevant context return " nothing relevant that I remember" and be very very very short and don't provide any other judgement or additional information!
-        
-        `);
-
-        const prompt =  ` 
-        ${promptStart}
-        You're meeting another inhabitant. This is the conversation so far:\n${memoryString}\n\n\n\n
-        
-        This is what you remember about them from previous interactions that is relevant to their phrase:\n${longTermMemory} Reply to this message from another inhabitant from the planet Hipola: "${message}" and ask a relevant question to continue the conversation. If you already had several messages exchanged, politely say goodbye and end conversation. Be concise. Remember, you're ${this.agentName}. 
-        
-        
-        ${instructions}`;
+        let longTermMemory = await this.queryLongTermMemory(getContinuationMemoryPrompt(this.agentName, this.anotherAgent, message));
+        const prompt = getContinuationPrompt(this.agentName, memoryString, longTermMemory, message);
 
         console.log("================= " + this.agentName.toUpperCase() + " CONTINUE PROMPT: " + prompt);
         console.log("================= ================= ================= ================= ================= ");
@@ -73,8 +54,7 @@ class Agent {
     }
 
     async getConversationSummary(content) {
-        const prompt = `You're an inhabitant of a planet Hipola, a very small and cosy planet. Your name is ${this.agentName}. you met another citizen and had this conversation: ${content}. Reflect on this conversation and summarize in one most important thought that worth remembering about the person you met, output only the thought. Remember, you're  ${this.agentName}.`;
-
+        const prompt = getConversationSummaryPrompt(this.agentName, content);
         return await generateResponse(prompt);
     }
 
@@ -101,7 +81,6 @@ class Agent {
         }
 
         const prompt = await this.agentPrompt(message);
-
         const response = await generateResponse(prompt);
 
         // Update shortMemory
@@ -110,7 +89,7 @@ class Agent {
             this.shortMemory.push(`${this.agentName} said: "${message}"`);
         }
 
-        await valkeyClient.publish(recipient, JSON.stringify({agent: this.agentName, message: response}));
+        await valkeyClient.publish(recipient, JSON.stringify({ agent: this.agentName, message: response }));
     }
 
     async reflect() {
@@ -120,7 +99,7 @@ class Agent {
 
         console.log('Consumed messages:', messages);
         const summary = await this.getConversationSummary(messages.join("; "));
-        console.log({summary})
+        console.log({ summary })
         this.storeInKafka(`${this.agentName}-reflections`, summary);
     }
 
@@ -166,7 +145,7 @@ class Agent {
         this.waitToConversationEnd(subscriber);
 
         // Start the conversation by sending the first message
-        // todo improve that only one agents starts
+        // todo improve that only one agent starts
         if (this.agentName === 'Judy') {
             await this.replyToMessage(null, this.anotherAgent);
         }

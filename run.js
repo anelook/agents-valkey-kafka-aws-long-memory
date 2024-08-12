@@ -1,5 +1,5 @@
-import Agent from './agent.js';
-import consumeAndIndex from "./sendWithEmbeddingstoOpenSearch.js";
+import Agent from './src/agent.js';
+import consumeAndIndex from "./src/sendWithEmbeddingstoOpenSearch.js";
 
 const kafkaTopic = Date.now().toString();
 const agent2 = new Agent('Nick', 'Judy', kafkaTopic);

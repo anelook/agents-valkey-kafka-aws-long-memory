@@ -5,7 +5,6 @@ import { consumeMessagesFromStartToEnd } from "./consumer.js";
 import { LongMemoryService } from './longTermMemory.js';
 import {
     getPromptStart,
-    instructions,
     getMemoryPrompt,
     getContinuationMemoryPrompt,
     getFirstPrompt,
@@ -32,8 +31,6 @@ class Agent {
     }
 
     async agentPrompt(message) {
-        const promptStart = getPromptStart(this.agentName);
-
         // start of the conversation:
         if (!message) {
             const memoriesOfOtherAgent = await this.queryLongTermMemory(getMemoryPrompt(this.agentName, this.anotherAgent));

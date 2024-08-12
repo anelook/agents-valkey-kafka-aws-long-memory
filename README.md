@@ -7,7 +7,7 @@
 ## Step 1: Deploy Aiven services with Terraform
 
 ### Register with Aiven
-If you don't have Aiven account yet, register here https://console.aiven.io/signup
+If you don't have Aiven account yet, [register here](https://go.aiven.io/aws-agents-workshop) to get extra credits.
 
 ### Get Aiven token
 In Aiven console Go to **User Information** menu and select **Tokens**:
@@ -36,6 +36,8 @@ Terraform will initiate creation of four resources:
 - Aiven for OpenSearch
 - Aiven for caching (Valkey)
 
+Once deployment is done, Terraform will also create `.env` file with necessary credentials to access the services.
+
 ## Step 2: Enable Amazon Bedrock model Claude
 In this project we use LLM Claude available through Amazon Bedrock.
 To invoke the model you need first to enable access:
@@ -47,23 +49,19 @@ To invoke the model you need first to enable access:
 4. In this project we use **Claude 3 Haiku**, you can also select a different model, but that might require changes in request/response formats.
 5. If you see a message `This account does not currently have access to this model. Request access in Model access.`, go to Model access and enable the model.
 
-## Step 3: Specify credentials in .env
-TODO with terraform
-### Valkey
-### Kafka
-### OpenSearch
+### AWS credentials
+This project assumes that AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID are accessible through the environment variables. Follow [AWS documentation](https://docs.aws.amazon.com/keyspaces/latest/devguide/access.credentials.html) for more details.
 
-### AWS
-???
+Context: the credentials are used by `@aws-sdk/client-bedrock-runtime` when creating a client, see Bedrock client creation in `./src/common.js` for details.
 
-## Step 4: Install libraries
+## Step 3: Install libraries
 This project uses npm and NodeJS, if you don't have them installed, follow instruction at [the NodeJS documentation page](https://nodejs.org/en/learn/getting-started/how-to-install-nodejs)
 Run
 ``npm install``
 
-## Step 5: Run locally
+## Step 4: Run locally
 Run
-``node run
+``node run``
 
 
 

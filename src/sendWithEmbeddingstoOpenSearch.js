@@ -8,14 +8,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const client = new Client({
-    nodes: [process.env.OPENSEARCH_URL],
+    nodes: [process.env.OPENSEARCH_SERVICE_URI],
 });
 
 const consumeAndIndex = (topicName) => {
     // Kafka consumer setup
     const consumer = new Kafka.KafkaConsumer({
         'group.id': 'kafka-group',
-        'metadata.broker.list': process.env["kafka.uri"],
+        'metadata.broker.list': process.env["KAFKA_SERVICE_URI"],
         'security.protocol': 'ssl',
         'ssl.key.location': process.env["ssl.key.location"],
         'ssl.certificate.location': process.env["ssl.certificate.location"],

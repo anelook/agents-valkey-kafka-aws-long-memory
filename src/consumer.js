@@ -7,7 +7,7 @@ export const consumeMessagesFromStartToEnd = async (topic, groupId) => {
         console.log('Initializing Kafka Consumer...');
         const consumer = new Kafka.KafkaConsumer({
             'group.id': groupId,
-            'metadata.broker.list': process.env["kafka.uri"],
+            'metadata.broker.list': process.env["KAFKA_SERVICE_URI"],
             'security.protocol': 'ssl',
             'ssl.key.location': process.env["ssl.key.location"],
             'ssl.certificate.location': process.env["ssl.certificate.location"],

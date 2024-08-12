@@ -3,7 +3,7 @@ import Valkey from 'iovalkey';
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const valkeyClient = new Valkey(process.env.VALKEY);
+export const valkeyClient = new Valkey(process.env.VALKEY_SERVICE_URI);
 
 export const client = new BedrockRuntimeClient({
     region: 'us-east-1',

@@ -19,7 +19,7 @@ export class LongMemoryService {
         });
 
         this.client = new Client({
-            nodes: [process.env.OPENSEARCH_URL],
+            nodes: [process.env.OPENSEARCH_SERVICE_URI],
         });
 
         this.vectorStore = new OpenSearchVectorStore(new BedrockEmbeddings({

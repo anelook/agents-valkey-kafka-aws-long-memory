@@ -132,7 +132,7 @@ class Agent {
     }
 
     async start() {
-        const subscriber = new Valkey(process.env.VALKEY);
+        const subscriber = new Valkey(process.env.VALKEY_SERVICE_URI);
 
         // listen what another agent tells you
         this.subscribe(subscriber, this.agentName);

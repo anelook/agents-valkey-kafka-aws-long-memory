@@ -14,11 +14,20 @@ resource "aiven_kafka" "kafka-service1" {
   }
 }
 
-# Kafka topic
-resource "aiven_kafka_topic" "kafka-topic1" {
+# Kafka topic for Judy
+resource "aiven_kafka_topic" "Judy-reflections" {
   project      = var.project_name
   service_name = aiven_kafka.kafka-service1.service_name
-  topic_name   = "test-kafka-topic1"
+  topic_name   = "Judy-reflections"
+  partitions   = 3
+  replication  = 2
+}
+
+# Kafka topic for Nick
+resource "aiven_kafka_topic" "Nick-reflections" {
+  project      = var.project_name
+  service_name = aiven_kafka.kafka-service1.service_name
+  topic_name   = "Nick-reflections"
   partitions   = 3
   replication  = 2
 }

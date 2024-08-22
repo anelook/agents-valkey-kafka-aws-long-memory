@@ -37,7 +37,7 @@ resource "aiven_opensearch" "open-search-service" {
   project                 = var.project_name
   cloud_name              = "aws-us-east-2"
   plan                    = "startup-4"
-  service_name            = "kafka-agents-long-term-memory"
+  service_name            = "opensearch-agent-conversation-memory"
 }
 
 # Valkey service
@@ -45,7 +45,7 @@ resource "aiven_valkey" "valkey-service" {
   project                 = var.project_name
   cloud_name              = "aws-us-east-2"
   plan                    = "startup-4"
-  service_name            = "kafka-agents-pub-sub"
+  service_name            = "valkey-agent-conversation-memory"
 }
 
 # Store sensitive outputs in a temporary file
